@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TNG Admin поворот колец
 // @namespace    http://tampermonkey.net/
-// @version      50.2
+// @version      50.2 
 // @description  Поворот/стрелки/вертикально + женские и мужские размеры колец. F1 — показать/скрыть весь блок.
 // @match        https://tngadmin.triplenext.net/Admin/CompareBag/EditBag/*
 // @match        https://yruleradmin.triplenext.net/Admin/CompareBag/EditBag/*
