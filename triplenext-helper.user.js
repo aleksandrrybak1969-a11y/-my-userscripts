@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         TNG Admin поворот колец v2
+// @name         TNG Admin поворот колец v3
 // @namespace    http://tampermonkey.net/
 // @version      50.2 
 // @description  Поворот/стрелки/вертикально + женские и мужские размеры колец. F1 — показать/скрыть весь блок.
@@ -875,10 +875,43 @@
             localStorage.setItem('rotateBtnState', 'place');
             console.log('✅ Этап 1 завершен!');
         } else if (rotateBtn.dataset.state === 'place') {
+            // Запоминаем активный инструмент редактора.
+            const activeTool = document.querySelector('.switch-editor-button.active');
+            const activeIcon = activeTool?.querySelector('i')?.className;
+
+            const editorButtons = Array.from(
+                document.querySelectorAll('.switch-editor-button')
+            );
+
+            // Находим инструмент линейки.
+            const rulerButton = editorButtons.find(btn =>
+                btn.querySelector('i.tng-ruler-icon')
+            );
+
             try {
+                // Перед размещением стрелок переключаемся на линейку.
+                if (rulerButton && !rulerButton.classList.contains('active')) {
+                    simulateClick(rulerButton);
+                    await sleep(T.ruler);
+                }
+
                 await placeArrow();
+
             } catch (err) {
                 console.error('[W] ошибка:', err);
+
+            } finally {
+                // Возвращаем инструмент, который был активен до размещения стрелок.
+                if (activeIcon && activeIcon !== 'tng-ruler-icon') {
+                    const previousButton = editorButtons.find(btn =>
+                        btn.querySelector('i')?.className === activeIcon
+                    );
+
+                    if (previousButton && !previousButton.classList.contains('active')) {
+                        simulateClick(previousButton);
+                        await sleep(T.ruler);
+                    }
+                }
             }
 
             rotateBtn.textContent = LABEL_ROTATE;
