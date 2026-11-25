@@ -6,8 +6,8 @@
 // @match        https://tngadmin.triplenext.net/Admin/CompareBag/EditBag/*
 // @match        https://yruleradmin.triplenext.net/Admin/CompareBag/EditBag/*
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/aleksandrrybak1969-ally/-my-userscripts/main/triplenext-helper.user.js
-// @downloadURL  https://raw.githubusercontent.com/aleksandrrybak1969-ally/-my-userscripts/main/triplenext-helper.user.js
+// @updateURL    https://raw.githubusercontent.com/aleksandrrybak1969-a11y/-my-userscripts/main/triplenext-autofill-sizes.user.js
+// @downloadURL  https://raw.githubusercontent.com/aleksandrrybak1969-a11y/-my-userscripts/main/triplenext-autofill-sizes.user.js
 // ==/UserScript==
 
 (function() {
