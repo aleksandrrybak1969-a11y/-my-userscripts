@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Triplenext: автозаполнение размеров
 // @namespace    http://tampermonkey.net/
-// @version      3.81
+// @version      3.82
 // @description  Автозаполнение размеров, передача между вкладками, Auto, перестановка, F2, копирование в Admin
 // @match        *://*/*
 // @grant        GM_setValue
