@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         Автозаполнение размеров
+// @name         Triplenext: автозаполнение размеров
 // @namespace    http://tampermonkey.net/
-// @version      3.8
+// @version      3.81
 // @description  Автозаполнение размеров, передача между вкладками, Auto, перестановка, F2, копирование в Admin
 // @match        *://*/*
 // @grant        GM_setValue
@@ -18,7 +18,7 @@
     const ACTIVE_ADMIN_KEY = 'tng_active_admin_tab';
     const CLIENT_TARGET_KEY = 'tng_target_admin_tab';
 
-    const HIGHLIGHT_DURATION_MS = 4000;
+    const HIGHLIGHT_DURATION_MS = 10000;
 
     const isAdminPage =
         location.hostname === 'tngadmin.triplenext.net' &&
@@ -68,7 +68,8 @@
             if (!/\d/.test(text)) return;
             if (
                 !/[xх×]/i.test(text) &&
-                !/\d\s*(mm|мм|cm|см|in|inch|"|″)/i.test(text)
+                !/\d\s*(mm|мм|cm|см|in|inch|"|″)/i.test(text) &&
+                !/(length|длина|width|ширина|height|высота|depth|глубина)/i.test(text)
             ) {
                 return;
             }
@@ -248,7 +249,8 @@
             if (!/\d/.test(text)) return;
             if (
                 !/[xх×]/i.test(text) &&
-                !/\d\s*(mm|мм|cm|см|in|inch|"|″)/i.test(text)
+                !/\d\s*(mm|мм|cm|см|in|inch|"|″)/i.test(text) &&
+                !/(length|длина|width|ширина|height|высота|depth|глубина)/i.test(text)
             ) {
                 return;
             }
@@ -317,7 +319,8 @@
             if (!/\d/.test(text)) return;
             if (
                 !/[xх×]/i.test(text) &&
-                !/\d\s*(mm|мм|cm|см|in|inch|"|″)/i.test(text)
+                !/\d\s*(mm|мм|cm|см|in|inch|"|″)/i.test(text) &&
+                !/(length|длина|width|ширина|height|высота|depth|глубина)/i.test(text)
             ) {
                 return;
             }
@@ -542,6 +545,28 @@
                 unit = normalizeUnit(pairMatch[3]);
             }
         }
+
+        // --- БЛОК РАСПОЗНАВАНИЯ ТЕКСТА С ПОДПИСЯМИ ---
+        if (values.length === 0) {
+            const lenMatch = source.match(/(?:length|длина)[^\d]*(\d+(?:[.,]\d+)?)/i);
+            const hMatch = source.match(/(?:height|высота)[^\d]*(\d+(?:[.,]\d+)?)/i);
+            const dMatch = source.match(/(?:depth|глубина)[^\d]*(\d+(?:[.,]\d+)?)/i);
+            const wMatch = source.match(/(?:width|ширина)[^\d]*(\d+(?:[.,]\d+)?)/i);
+
+            if (lenMatch || hMatch || dMatch || wMatch) {
+                let tempValues = [];
+                if (lenMatch) tempValues.push(parseNumber(lenMatch[1]));
+                if (hMatch) tempValues.push(parseNumber(hMatch[1]));
+                if (dMatch) tempValues.push(parseNumber(dMatch[1]));
+                if (wMatch) tempValues.push(parseNumber(wMatch[1]));
+
+                const unitMatch = source.match(/(mm|см|cm|in|inch|")/i);
+                unit = unitMatch ? normalizeUnit(unitMatch[1]) : 'cm';
+
+                values = tempValues.map(v => convertUnit(v, unit));
+            }
+        }
+        // ----------------------------------------------
 
         // 3. Единица указана после каждого числа.
         if (values.length === 0) {
