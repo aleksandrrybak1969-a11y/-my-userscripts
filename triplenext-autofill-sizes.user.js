@@ -18,7 +18,7 @@
     const ACTIVE_ADMIN_KEY = 'tng_active_admin_tab';
     const CLIENT_TARGET_KEY = 'tng_target_admin_tab';
 
-    const HIGHLIGHT_DURATION_MS = 10000;
+    const HIGHLIGHT_DURATION_MS = 4000;
 
     const isAdminPage =
         location.hostname === 'tngadmin.triplenext.net' &&
