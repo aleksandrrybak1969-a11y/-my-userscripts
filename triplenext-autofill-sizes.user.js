@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Triplenext: автозаполнение размеров
 // @namespace    http://tampermonkey.net/
-// @version      3.82
+// @version      3.83
 // @description  Автозаполнение размеров, передача между вкладками, Auto, перестановка, F2, копирование в Admin
 // @match        *://*/*
 // @grant        GM_setValue
@@ -546,24 +546,44 @@
             }
         }
 
-        // --- БЛОК РАСПОЗНАВАНИЯ ТЕКСТА С ПОДПИСЯМИ ---
+        // --- БЛОК РАСПОЗНАВАНИЯ ТЕКСТА С ПОДПИСЯМИ И/ИЛИ ЕДИНИЦАМИ ---
         if (values.length === 0) {
-            const lenMatch = source.match(/(?:length|длина)[^\d]*(\d+(?:[.,]\d+)?)/i);
-            const hMatch = source.match(/(?:height|высота)[^\d]*(\d+(?:[.,]\d+)?)/i);
-            const dMatch = source.match(/(?:depth|глубина)[^\d]*(\d+(?:[.,]\d+)?)/i);
-            const wMatch = source.match(/(?:width|ширина)[^\d]*(\d+(?:[.,]\d+)?)/i);
+            // 1.1. Сначала пробуем найти формат: 6.5" length x 3" width x 6"
+            // То есть число + единица + слово + x + число + единица + слово...
+            const detailedRe = new RegExp(
+                `(${NUMBER_PATTERN})\\s*${UNIT_PATTERN}[^xх×]*?[xх×]\\s*` +
+                `(${NUMBER_PATTERN})\\s*${UNIT_PATTERN}[^xх×]*?[xх×]\\s*` +
+                `(${NUMBER_PATTERN})\\s*${UNIT_PATTERN}`,
+                'i'
+            );
+            const detailedMatch = source.match(detailedRe);
 
-            if (lenMatch || hMatch || dMatch || wMatch) {
-                let tempValues = [];
-                if (lenMatch) tempValues.push(parseNumber(lenMatch[1]));
-                if (hMatch) tempValues.push(parseNumber(hMatch[1]));
-                if (dMatch) tempValues.push(parseNumber(dMatch[1]));
-                if (wMatch) tempValues.push(parseNumber(wMatch[1]));
+            if (detailedMatch) {
+                values = [
+                    parseNumber(detailedMatch[1]),
+                    parseNumber(detailedMatch[2]),
+                    parseNumber(detailedMatch[3])
+                ];
+                unit = normalizeUnit(detailedMatch[4]);
+            } else {
+                // 1.2. Если не сработало, ищем по подписям (length, width, depth)
+                const lenMatch = source.match(/(?:length|длина)[^\d]*(\d+(?:[.,]\d+)?)/i);
+                const hMatch = source.match(/(?:height|высота)[^\d]*(\d+(?:[.,]\d+)?)/i);
+                const dMatch = source.match(/(?:depth|глубина)[^\d]*(\d+(?:[.,]\d+)?)/i);
+                const wMatch = source.match(/(?:width|ширина)[^\d]*(\d+(?:[.,]\d+)?)/i);
 
-                const unitMatch = source.match(/(mm|см|cm|in|inch|")/i);
-                unit = unitMatch ? normalizeUnit(unitMatch[1]) : 'cm';
+                if (lenMatch || hMatch || dMatch || wMatch) {
+                    let tempValues = [];
+                    if (lenMatch) tempValues.push(parseNumber(lenMatch[1]));
+                    if (hMatch) tempValues.push(parseNumber(hMatch[1]));
+                    if (dMatch) tempValues.push(parseNumber(dMatch[1]));
+                    if (wMatch) tempValues.push(parseNumber(wMatch[1]));
 
-                values = tempValues.map(v => convertUnit(v, unit));
+                    const unitMatch = source.match(/(mm|см|cm|in|inch|"|″|”)/i);
+                    unit = unitMatch ? normalizeUnit(unitMatch[1]) : 'cm';
+
+                    values = tempValues.map(v => convertUnit(v, unit));
+                }
             }
         }
         // ----------------------------------------------
